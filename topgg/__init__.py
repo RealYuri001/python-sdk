@@ -10,9 +10,9 @@ A basic wrapper for the Top.gg API.
 
 __title__ = "topggpy"
 __author__ = "Assanali Mukhanov"
-__maintainer__ = "Norizon"
+__maintainer__ = "RealKiller666"
 __license__ = "MIT"
-__version__ = "2.0.0a1"
+__version__ = "2.0.0a2"
 
 from .autopost import *
 from .client import *
