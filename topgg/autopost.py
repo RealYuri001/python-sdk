@@ -22,23 +22,32 @@
 
 __all__ = ["AutoPoster"]
 
+from __future__ import annotations
+
 import asyncio
 import datetime
 import sys
 import traceback
-import typing as t
+from typing import (
+    Any,
+    Callable,
+    Optional,
+    overload,
+    TYPE_CHECKING,
+    Union
+)
 
 from topgg import errors
 
 from .types import StatsWrapper
 
-if t.TYPE_CHECKING:
+if TYPE_CHECKING:
     import asyncio
 
     from .client import DBLClient
 
-CallbackT = t.Callable[..., t.Any]
-StatsCallbackT = t.Callable[[], StatsWrapper]
+CallbackT = Callable[..., Any]
+StatsCallbackT = Callable[[], StatsWrapper]
 
 
 class AutoPoster:
@@ -67,9 +76,9 @@ class AutoPoster:
     _success: CallbackT
     _stats: CallbackT
     _interval: float
-    _task: t.Optional["asyncio.Task[None]"]
+    _task: Optional[asyncio.Task[None]]
 
-    def __init__(self, client: "DBLClient") -> None:
+    def __init__(self, client: DBLClient) -> None:
         super().__init__()
         self.client = client
         self._interval: float = 900
@@ -82,15 +91,15 @@ class AutoPoster:
             type(exception), exception, exception.__traceback__, file=sys.stderr
         )
 
-    @t.overload
-    def on_success(self, callback: None) -> t.Callable[[CallbackT], CallbackT]:
+    @overload
+    def on_success(self, callback: None) -> Callable[[CallbackT], CallbackT]:
         ...
 
-    @t.overload
-    def on_success(self, callback: CallbackT) -> "AutoPoster":
+    @overload
+    def on_success(self, callback: CallbackT) -> AutoPoster:
         ...
 
-    def on_success(self, callback: t.Any = None) -> t.Any:
+    def on_success(self, callback: Any = None) -> Any:
         """
         Registers an autopost success callback. The callback can be either sync or async.
 
@@ -123,15 +132,15 @@ class AutoPoster:
 
         return decorator
 
-    @t.overload
-    def on_error(self, callback: None) -> t.Callable[[CallbackT], CallbackT]:
+    @overload
+    def on_error(self, callback: None) -> Callable[[CallbackT], CallbackT]:
         ...
 
-    @t.overload
-    def on_error(self, callback: CallbackT) -> "AutoPoster":
+    @overload
+    def on_error(self, callback: CallbackT) -> AutoPoster:
         ...
 
-    def on_error(self, callback: t.Any = None) -> t.Any:
+    def on_error(self, callback: Any = None) -> Any:
         """
         Registers an autopost error callback. The callback can be either sync or async.
 
@@ -168,15 +177,15 @@ class AutoPoster:
 
         return decorator
 
-    @t.overload
-    def stats(self, callback: None) -> t.Callable[[StatsCallbackT], StatsCallbackT]:
+    @overload
+    def stats(self, callback: None) -> Callable[[StatsCallbackT], StatsCallbackT]:
         ...
 
-    @t.overload
-    def stats(self, callback: StatsCallbackT) -> "AutoPoster":
+    @overload
+    def stats(self, callback: StatsCallbackT) -> AutoPoster:
         ...
 
-    def stats(self, callback: t.Any = None) -> t.Any:
+    def stats(self, callback: Any = None) -> Any:
         """
         Registers a function that returns an instance of :obj:`~.types.StatsWrapper`.
 
@@ -221,11 +230,11 @@ class AutoPoster:
         return self._interval
 
     @interval.setter
-    def interval(self, seconds: t.Union[float, datetime.timedelta]) -> None:
+    def interval(self, seconds: Union[float, datetime.timedelta]) -> None:
         """Alias to :meth:`~.autopost.AutoPoster.set_interval`."""
         self.set_interval(seconds)
 
-    def set_interval(self, seconds: t.Union[float, datetime.timedelta]) -> "AutoPoster":
+    def set_interval(self, seconds: Union[float, datetime.timedelta]) -> AutoPoster:
         """
         Sets the interval between posting stats.
 
@@ -255,7 +264,7 @@ class AutoPoster:
         self._task = None
         self._stopping = False
 
-    def _fut_done_callback(self, future: "asyncio.Future") -> None:
+    def _fut_done_callback(self, future: asyncio.Future) -> None:
         self._refresh_state()
         if future.cancelled():
             return
@@ -282,7 +291,7 @@ class AutoPoster:
         finally:
             self._refresh_state()
 
-    def start(self) -> "asyncio.Task[None]":
+    def start(self) -> asyncio.Task[None]:
         """
         Starts the autoposting loop.
 

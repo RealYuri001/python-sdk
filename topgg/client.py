@@ -24,7 +24,7 @@
 
 __all__ = ["DBLClient"]
 
-import typing as t
+from typing import overload, Optional, Any, Union
 
 import aiohttp
 
@@ -60,9 +60,9 @@ class DBLClient(DataContainerMixin):
         self,
         token: str,
         *,
-        default_bot_id: t.Optional[int] = None,
-        session: t.Optional[aiohttp.ClientSession] = None,
-        **kwargs: t.Any,
+        default_bot_id: Optional[int] = None,
+        session: Optional[aiohttp.ClientSession] = None,
+        **kwargs: Any,
     ) -> None:
         super().__init__()
         self._token = token
@@ -70,7 +70,7 @@ class DBLClient(DataContainerMixin):
         self._is_closed = False
         if session is not None:
             self.http = HTTPClient(token, session=session)
-        self._autopost: t.Optional[AutoPoster] = None
+        self._autopost: Optional[AutoPoster] = None
 
     @property
     def is_closed(self) -> bool:
@@ -83,7 +83,7 @@ class DBLClient(DataContainerMixin):
         if not hasattr(self, "http"):
             self.http = HTTPClient(self._token, session=None)
 
-    def _validate_and_get_bot_id(self, bot_id: t.Optional[int]) -> int:
+    def _validate_and_get_bot_id(self, bot_id: Optional[int]) -> int:
         bot_id = bot_id or self.default_bot_id
         if bot_id is None:
             raise errors.ClientException("bot_id or default_bot_id is unset.")
@@ -104,27 +104,27 @@ class DBLClient(DataContainerMixin):
         data = await self.http.get_weekend_status()
         return data["is_weekend"]
 
-    @t.overload
+    @overload
     async def post_guild_count(self, stats: types.StatsWrapper) -> None:
         ...
 
-    @t.overload
+    @overload
     async def post_guild_count(
         self,
         *,
-        guild_count: t.Union[int, t.List[int]],
-        shard_count: t.Optional[int] = None,
-        shard_id: t.Optional[int] = None,
+        guild_count: Union[int, list[int]],
+        shard_count: Optional[int] = None,
+        shard_id: Optional[int] = None,
     ) -> None:
         ...
 
     async def post_guild_count(
         self,
-        stats: t.Any = None,
+        stats: Any = None,
         *,
-        guild_count: t.Any = None,
-        shard_count: t.Any = None,
-        shard_id: t.Any = None,
+        guild_count: Any = None,
+        shard_count: Any = None,
+        shard_id: Any = None,
     ) -> None:
         """Posts your bot's guild count and shards info to Top.gg.
 
@@ -162,7 +162,7 @@ class DBLClient(DataContainerMixin):
         await self.http.post_guild_count(guild_count, shard_count, shard_id)
 
     async def get_guild_count(
-        self, bot_id: t.Optional[int] = None
+        self, bot_id: Optional[int] = None
     ) -> types.BotStatsData:
         """Gets a bot's guild count and shard info from Top.gg.
 
@@ -185,7 +185,7 @@ class DBLClient(DataContainerMixin):
         response = await self.http.get_guild_count(bot_id)
         return types.BotStatsData(**response)
 
-    async def get_bot_votes(self) -> t.List[types.BriefUserData]:
+    async def get_bot_votes(self) -> list[types.BriefUserData]:
         """Gets information about last 1000 votes for your bot on Top.gg.
 
         Note:
@@ -209,7 +209,7 @@ class DBLClient(DataContainerMixin):
         response = await self.http.get_bot_votes(self.default_bot_id)
         return [types.BriefUserData(**user) for user in response]
 
-    async def get_bot_info(self, bot_id: t.Optional[int] = None) -> types.BotData:
+    async def get_bot_info(self, bot_id: Optional[int] = None) -> types.BotData:
         """This function is a coroutine.
 
         Gets information about a bot from Top.gg.
@@ -238,10 +238,10 @@ class DBLClient(DataContainerMixin):
         self,
         limit: int = 50,
         offset: int = 0,
-        sort: t.Optional[str] = None,
-        search: t.Optional[t.Dict[str, t.Any]] = None,
-        fields: t.Optional[t.List[str]] = None,
-    ) -> types.DataDict[str, t.Any]:
+        sort: Optional[str] = None,
+        search: Optional[dict[str, Any]] = None,
+        fields: Optional[list[str]] = None,
+    ) -> types.DataDict[str, Any]:
         """This function is a coroutine.
 
         Gets information about listed bots on Top.gg.

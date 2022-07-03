@@ -30,8 +30,18 @@ __all__ = [
     "WebhookType",
 ]
 
+from __future__ import annotations
+
 import enum
-import typing as t
+from typing import (
+    Callable,
+    Optional,
+    TypeVar,
+    Awaitable,
+    TYPE_CHECKING,
+    Any,
+    overload
+)
 
 import aiohttp
 from aiohttp import web
@@ -41,11 +51,11 @@ from topgg.errors import TopGGException
 from .data import DataContainerMixin
 from .types import BotVoteData, GuildVoteData
 
-if t.TYPE_CHECKING:
+if TYPE_CHECKING:
     from aiohttp.web import Request, StreamResponse
 
-T = t.TypeVar("T", bound="WebhookEndpoint")
-_HandlerT = t.Callable[["Request"], t.Awaitable["StreamResponse"]]
+T = TypeVar("T", bound="WebhookEndpoint")
+_HandlerT = Callable[["Request"], Awaitable["StreamResponse"]]
 
 
 class WebhookType(enum.Enum):
@@ -73,15 +83,15 @@ class WebhookManager(DataContainerMixin):
         self.__app = web.Application()
         self._is_running = False
 
-    @t.overload
-    def endpoint(self, endpoint_: None = None) -> "BoundWebhookEndpoint":
+    @overload
+    def endpoint(self, endpoint_: None = None) -> BoundWebhookEndpoint:
         ...
 
-    @t.overload
-    def endpoint(self, endpoint_: "WebhookEndpoint") -> "WebhookManager":
+    @overload
+    def endpoint(self, endpoint_: WebhookEndpoint) -> WebhookManager:
         ...
 
-    def endpoint(self, endpoint_: t.Optional["WebhookEndpoint"] = None) -> t.Any:
+    def endpoint(self, endpoint_: Optional["WebhookEndpoint"] = None) -> Any:
         """Helper method that returns a WebhookEndpoint object.
 
         Args:
@@ -150,7 +160,7 @@ class WebhookManager(DataContainerMixin):
         self._is_running = False
 
     def _get_handler(
-        self, type_: WebhookType, auth: str, callback: t.Callable[..., t.Any]
+        self, type_: WebhookType, auth: str, callback: Callable[..., Any]
     ) -> _HandlerT:
         async def _handler(request: aiohttp.web.Request) -> web.Response:
             if request.headers.get("Authorization", "") != auth:
@@ -166,7 +176,7 @@ class WebhookManager(DataContainerMixin):
         return _handler
 
 
-CallbackT = t.Callable[..., t.Any]
+CallbackT = Callable[..., Any]
 
 
 class WebhookEndpoint:
@@ -179,7 +189,7 @@ class WebhookEndpoint:
     def __init__(self) -> None:
         self._auth = ""
 
-    def __call__(self, *args: t.Any, **kwargs: t.Any) -> t.Any:
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
         return self._callback(*args, **kwargs)
 
     def type(self: T, type_: WebhookType) -> T:
@@ -223,15 +233,15 @@ class WebhookEndpoint:
         self._auth = auth_
         return self
 
-    @t.overload
-    def callback(self, callback_: None) -> t.Callable[[CallbackT], CallbackT]:
+    @overload
+    def callback(self, callback_: None) -> Callable[[CallbackT], CallbackT]:
         ...
 
-    @t.overload
+    @overload
     def callback(self: T, callback_: CallbackT) -> T:
         ...
 
-    def callback(self, callback_: t.Any = None) -> t.Any:
+    def callback(self, callback_: Any = None) -> Any:
         """
         Registers a vote callback, called whenever this endpoint receives POST requests.
 
@@ -331,7 +341,7 @@ class BoundWebhookEndpoint(WebhookEndpoint):
 
 def endpoint(
     route: str, type: WebhookType, auth: str = ""
-) -> t.Callable[[t.Callable[..., t.Any]], WebhookEndpoint]:
+) -> Callable[[Callable[..., Any]], WebhookEndpoint]:
     """
     A decorator factory for instantiating WebhookEndpoint.
 
@@ -361,7 +371,7 @@ def endpoint(
                 ...
     """
 
-    def decorator(func: t.Callable[..., t.Any]) -> WebhookEndpoint:
+    def decorator(func: Callable[..., Any]) -> WebhookEndpoint:
         return WebhookEndpoint().route(route).type(type).auth(auth).callback(func)
 
     return decorator
