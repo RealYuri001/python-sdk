@@ -97,25 +97,24 @@ class WebhookManager(DataContainerMixin):
             :obj:`~.errors.TopGGException`
                 If the endpoint is lacking attributes.
         """
-        if endpoint_:
-            if not hasattr(endpoint_, "_callback"):
-                raise TopGGException("endpoint missing callback.")
+        if not endpoint_:
+            return BoundWebhookEndpoint(manager=self)
+        if not hasattr(endpoint_, "_callback"):
+            raise TopGGException("endpoint missing callback.")
 
-            if not hasattr(endpoint_, "_type"):
-                raise TopGGException("endpoint missing type.")
+        if not hasattr(endpoint_, "_type"):
+            raise TopGGException("endpoint missing type.")
 
-            if not hasattr(endpoint_, "_route"):
-                raise TopGGException("endpoint missing route.")
+        if not hasattr(endpoint_, "_route"):
+            raise TopGGException("endpoint missing route.")
 
-            self.app.router.add_post(
-                endpoint_._route,
-                self._get_handler(
-                    endpoint_._type, endpoint_._auth, endpoint_._callback
-                ),
-            )
-            return self
-
-        return BoundWebhookEndpoint(manager=self)
+        self.app.router.add_post(
+            endpoint_._route,
+            self._get_handler(
+                endpoint_._type, endpoint_._auth, endpoint_._callback
+            ),
+        )
+        return self
 
     async def start(self, port: int) -> None:
         """Runs the webhook.

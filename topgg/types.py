@@ -35,15 +35,16 @@ Colours = Colors
 
 
 def camel_to_snake(string: str) -> str:
-    return "".join(["_" + c.lower() if c.isupper() else c for c in string]).lstrip("_")
+    return "".join(
+        [f"_{c.lower()}" if c.isupper() else c for c in string]
+    ).lstrip("_")
 
 
 def parse_vote_dict(d: dict) -> dict:
     data = d.copy()
 
-    query = data.get("query", "").lstrip("?")
-    if query:
-        query_dict = {k: v for k, v in [pair.split("=") for pair in query.split("&")]}
+    if query := data.get("query", "").lstrip("?"):
+        query_dict = dict([pair.split("=") for pair in query.split("&")])
         data["query"] = DataDict(**query_dict)
     else:
         data["query"] = {}
@@ -70,11 +71,10 @@ def parse_dict(d: dict) -> dict:
         if "id" in key.lower():
             if value == "":
                 value = None
+            elif isinstance(value, str) and value.isdigit():
+                value = int(value)
             else:
-                if isinstance(value, str) and value.isdigit():
-                    value = int(value)
-                else:
-                    continue
+                continue
         elif value == "":
             value = None
 
