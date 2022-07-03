@@ -354,8 +354,7 @@ class DBLClient(DataContainerMixin):
         widget_format = options.format
         widget_type = f"/{options.type}" if options.type else ""
 
-        url = f"""https://top.gg/api/widget{widget_type}/{bot_id}.{widget_format}?{widget_query}"""
-        return url
+        return f"""https://top.gg/api/widget{widget_type}/{bot_id}.{widget_format}?{widget_query}"""
 
     async def close(self) -> None:
         """Closes all connections."""

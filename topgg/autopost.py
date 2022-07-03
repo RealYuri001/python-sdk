@@ -272,8 +272,7 @@ class AutoPoster:
                     if isinstance(err, errors.Unauthorized):
                         raise err from None
                 else:
-                    on_success = getattr(self, "_success", None)
-                    if on_success:
+                    if on_success := getattr(self, "_success", None):
                         await self.client._invoke_callback(on_success)
 
                 if self._stopping:
